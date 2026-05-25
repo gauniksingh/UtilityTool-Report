@@ -6,7 +6,204 @@
 <title>Utility Tool Report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js">
+
+function renderPilotCharts() {
+
+  // Highest GRO creation
+  const topGro = [...pilotRaw]
+    .sort((a,b) => b.groCount - a.groCount)
+    .slice(0,5);
+
+  // Highest sub-org creation
+  const topSub = [...pilotRaw]
+    .sort((a,b) => b.subOrgCount - a.subOrgCount)
+    .slice(0,5);
+  
+const groCanvas = document.getElementById('pilotGroChart');
+
+if (groCanvas) new Chart(groCanvas, {
+
+    type: 'bar',
+    data: {
+      labels: topGro.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
+      datasets: [{
+        data: topGro.map(r => r.groCount),
+        backgroundColor: '#1a5276',
+        borderRadius: 4,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f0ede8' },
+          ticks: {
+            precision: 0,
+            font: { size: 11 }
+          }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 10 }
+          }
+        }
+      }
+    }
+  });
+
+  
+const subCanvas = document.getElementById('pilotSubChart');
+
+if (subCanvas) new Chart(subCanvas, {
+
+    type: 'bar',
+    data: {
+      labels: topSub.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
+      datasets: [{
+        data: topSub.map(r => r.subOrgCount),
+        backgroundColor: '#1a6b3c',
+        borderRadius: 4,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f0ede8' },
+          ticks: {
+            precision: 0,
+            font: { size: 11 }
+          }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 10 }
+          }
+        }
+      }
+    }
+  });
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+function buildPilotSection() {
+  const pilot = document.getElementById('pilot');
+
+  const total = pilotRaw.length;
+  const logged = pilotRaw.filter(r => r.login === 'Yes').length;
+  const gro = pilotRaw.reduce((s,r)=>s+r.groCount,0);
+  const sub = pilotRaw.reduce((s,r)=>s+r.subOrgCount,0);
+
+  pilot.innerHTML = `
+  <div class="stats-bar">
+    <div class="stat-card accent">
+      <div class="stat-label">Pilot entities</div>
+      <div class="stat-value">${total}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Logged in</div>
+      <div class="stat-value">${logged}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total sub-orgs</div>
+      <div class="stat-value">${sub}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total GROs</div>
+      <div class="stat-value">${gro}</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Top Pilot Organizations by GRO Creation</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="pilotGroChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Top Pilot Organizations by Sub-Organization Creation</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="pilotSubChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-header-title">Pilot ministry / department details</div>
+        <div class="row-count">${pilotRaw.length} entities</div>
+      </div>
+
+      <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Parent Organization</th>
+            <th>Sub-Organization</th>
+            <th>Logged In</th>
+            <th>Last Login</th>
+            <th>Sub-Org Count</th>
+            <th>GRO Count</th>
+            <th>GRO Mapping</th>
+            <th>Categories Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pilotRaw.map(r => `
+            <tr>
+              <td class="sno">${r.sno}</td>
+              <td class="org-name">${r.parent}</td>
+              <td>${r.sub}</td>
+              <td>${pill(r.login)}</td>
+              <td class="login-time">${r.loginTime || '—'}</td>
+              <td class="num">${r.subOrgCount}</td>
+              <td class="num">${r.groCount}</td>
+              <td>${pill(r.groMapping)}</td>
+              <td>${pill(r.categories)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  
+buildPilotSection();
+renderPilotCharts();
+
+});
+
+
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -72,6 +269,13 @@
     .header, .controls, .stats-bar, .charts-row, .table-wrap { padding-left: 16px; padding-right: 16px; }
     .charts-row { grid-template-columns: 1fr; }
   }
+
+.tabs-nav { display:flex; gap:10px; padding:20px 40px 0; }
+.tab-btn { background: var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; color:var(--text2); }
+.tab-btn.active { background: var(--accent); color:white; border-color:var(--accent); }
+.dashboard-section { display:none; }
+.dashboard-section.active { display:block; }
+
 </style>
 </head>
 <body>
@@ -83,6 +287,14 @@
   </div>
   <div class="header-sub">Parent organization engagement, sub-org activity &amp; GRO mapping overview</div>
 </div>
+
+
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="switchTab('daily', this)">Daily Report</button>
+  <button class="tab-btn" onclick="switchTab('pilot', this)">Pilot Ministries / Dept</button>
+</div>
+
+<div id="daily" class="dashboard-section active">
 
 <div class="controls">
   <div class="search-wrap">
@@ -173,6 +385,22 @@ const raw = [
   {sno:21,org:"Ministry of Personnel, Public Grievance and Pension",login:"Yes",loginTime:"25-05-2026 17:52",subOrg:"Yes",subOrgCount:2,groCount:16,groMapping:"Yes",categories:"No"}
 ];
 
+
+const pilotRaw = [
+  {sno:1,parent:"Ministry of Labour & Employment",sub:"Ministry of Labour & Employment",login:"Yes",loginTime:"25-05-2026 15:44",subOrg:"Yes",subOrgCount:8,groCount:21,groMapping:"Yes",categories:"No"},
+  {sno:2,parent:"Ministry of Finance",sub:"Department of Financial Services",login:"Yes",loginTime:"13-05-2026 12:31",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
+  {sno:4,parent:"Ministry of Rural Development",sub:"Department of Rural Development",login:"Yes",loginTime:"21-05-2026 10:37",subOrg:"Yes",subOrgCount:1,groCount:35,groMapping:"Yes",categories:"No"},
+  {sno:5,parent:"Ministry of Rural Development",sub:"Department of Land Resources",login:"No",loginTime:"",subOrg:"No",subOrgCount:0,groCount:0,groMapping:"No",categories:"No"},
+  {sno:6,parent:"Ministry of Finance",sub:"Department of Economic Affairs",login:"Yes",loginTime:"13-05-2026 11:38",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
+  {sno:7,parent:"Ministry of Finance",sub:"Department of Expenditure",login:"Yes",loginTime:"19-05-2026 11:05",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
+  {sno:8,parent:"Ministry of Finance",sub:"Department of Investment & Public Asset Management",login:"Yes",loginTime:"13-05-2026 11:38",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
+  {sno:9,parent:"Ministry of Finance",sub:"Department of Public Enterprises",login:"Yes",loginTime:"13-05-2026 11:38",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
+  {sno:10,parent:"Ministry of Finance",sub:"Central Board of Indirect Taxes and Customs",login:"Yes",loginTime:"25-05-2026 14:20",subOrg:"Yes",subOrgCount:41,groCount:0,groMapping:"No",categories:"No"},
+  {sno:11,parent:"Ministry of Finance",sub:"Central Board of Direct Taxes",login:"Yes",loginTime:"21-05-2026 13:15",subOrg:"Yes",subOrgCount:38,groCount:1,groMapping:"Yes",categories:"No"}
+ {sno:11,parent:"Directorate of Public Grievances",sub:"Directorate of Public Grievances",login:"No",loginTime:"",subOrg:"No",subOrgCount:0,groCount:0,groMapping:"No",categories:"No"}
+
+];
+
 let data = [...raw];
 let sortKey = 'sno';
 let sortDir = 1;
@@ -196,6 +424,10 @@ function renderStats(d) {
     <div class="stat-card">
       <div class="stat-label">Logged in</div>
       <div class="stat-value" style="color:#1a6b3c">${loggedIn}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sub-orgs created</div>
+      <div class="stat-value">${hasSubOrg}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Total sub-orgs</div>
@@ -330,6 +562,189 @@ document.getElementById('filterGRO').addEventListener('change', update);
 document.getElementById('filterCategories').addEventListener('change', update);
 
 update();
+
+
+function renderPilotCharts() {
+
+  // Highest GRO creation
+  const topGro = [...pilotRaw]
+    .sort((a,b) => b.groCount - a.groCount)
+    .slice(0,5);
+
+  // Highest sub-org creation
+  const topSub = [...pilotRaw]
+    .sort((a,b) => b.subOrgCount - a.subOrgCount)
+    .slice(0,5);
+  
+const groCanvas = document.getElementById('pilotGroChart');
+
+if (groCanvas) new Chart(groCanvas, {
+
+    type: 'bar',
+    data: {
+      labels: topGro.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
+      datasets: [{
+        data: topGro.map(r => r.groCount),
+        backgroundColor: '#1a5276',
+        borderRadius: 4,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f0ede8' },
+          ticks: {
+            precision: 0,
+            font: { size: 11 }
+          }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 10 }
+          }
+        }
+      }
+    }
+  });
+
+  
+const subCanvas = document.getElementById('pilotSubChart');
+
+if (subCanvas) new Chart(subCanvas, {
+
+    type: 'bar',
+    data: {
+      labels: topSub.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
+      datasets: [{
+        data: topSub.map(r => r.subOrgCount),
+        backgroundColor: '#1a6b3c',
+        borderRadius: 4,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f0ede8' },
+          ticks: {
+            precision: 0,
+            font: { size: 11 }
+          }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 10 }
+          }
+        }
+      }
+    }
+  });
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+function buildPilotSection() {
+  const pilot = document.getElementById('pilot');
+
+  const total = pilotRaw.length;
+  const logged = pilotRaw.filter(r => r.login === 'Yes').length;
+  const gro = pilotRaw.reduce((s,r)=>s+r.groCount,0);
+  const sub = pilotRaw.reduce((s,r)=>s+r.subOrgCount,0);
+
+  pilot.innerHTML = `
+  <div class="stats-bar">
+    <div class="stat-card accent">
+      <div class="stat-label">Pilot entities</div>
+      <div class="stat-value">${total}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Logged in</div>
+      <div class="stat-value">${logged}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total sub-orgs</div>
+      <div class="stat-value">${sub}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total GROs</div>
+      <div class="stat-value">${gro}</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-header-title">Pilot ministry / department details</div>
+        <div class="row-count">${pilotRaw.length} entities</div>
+      </div>
+
+      <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Parent Organization</th>
+            <th>Sub-Organization</th>
+            <th>Logged In</th>
+            <th>Last Login</th>
+            <th>Sub-Org Count</th>
+            <th>GRO Count</th>
+            <th>GRO Mapping</th>
+            <th>Categories Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pilotRaw.map(r => `
+            <tr>
+              <td class="sno">${r.sno}</td>
+              <td class="org-name">${r.parent}</td>
+              <td>${r.sub}</td>
+              <td>${pill(r.login)}</td>
+              <td class="login-time">${r.loginTime || '—'}</td>
+              <td class="num">${r.subOrgCount}</td>
+              <td class="num">${r.groCount}</td>
+              <td>${pill(r.groMapping)}</td>
+              <td>${pill(r.categories)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  
+buildPilotSection();
+renderPilotCharts();
+
+});
+
+
 </script>
-</body>
+</div>
+<div id='pilot' class='dashboard-section'></div>
+
 </html>
