@@ -1,749 +1,310 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Utility Tool Report</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js">
+<title>Stakeholder Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-function renderPilotCharts() {
-
-  // Highest GRO creation
-  const topGro = [...pilotRaw]
-    .sort((a,b) => b.groCount - a.groCount)
-    .slice(0,5);
-
-  // Highest sub-org creation
-  const topSub = [...pilotRaw]
-    .sort((a,b) => b.subOrgCount - a.subOrgCount)
-    .slice(0,5);
-  
-const groCanvas = document.getElementById('pilotGroChart');
-
-if (groCanvas) new Chart(groCanvas, {
-
-    type: 'bar',
-    data: {
-      labels: topGro.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
-      datasets: [{
-        data: topGro.map(r => r.groCount),
-        backgroundColor: '#1a5276',
-        borderRadius: 4,
-        barThickness: 18
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          grid: { color: '#f0ede8' },
-          ticks: {
-            precision: 0,
-            font: { size: 11 }
-          }
-        },
-        y: {
-          grid: { display: false },
-          ticks: {
-            font: { size: 10 }
-          }
-        }
-      }
-    }
-  });
-
-  
-const subCanvas = document.getElementById('pilotSubChart');
-
-if (subCanvas) new Chart(subCanvas, {
-
-    type: 'bar',
-    data: {
-      labels: topSub.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
-      datasets: [{
-        data: topSub.map(r => r.subOrgCount),
-        backgroundColor: '#1a6b3c',
-        borderRadius: 4,
-        barThickness: 18
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          grid: { color: '#f0ede8' },
-          ticks: {
-            precision: 0,
-            font: { size: 11 }
-          }
-        },
-        y: {
-          grid: { display: false },
-          ticks: {
-            font: { size: 10 }
-          }
-        }
-      }
-    }
-  });
-}
-
-function switchTab(id, el) {
-  document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  el.classList.add('active');
-}
-
-function buildPilotSection() {
-  const pilot = document.getElementById('pilot');
-
-  const total = pilotRaw.length;
-  const logged = pilotRaw.filter(r => r.login === 'Yes').length;
-  const gro = pilotRaw.reduce((s,r)=>s+r.groCount,0);
-  const sub = pilotRaw.reduce((s,r)=>s+r.subOrgCount,0);
-
-  pilot.innerHTML = `
-  <div class="stats-bar">
-    <div class="stat-card accent">
-      <div class="stat-label">Pilot entities</div>
-      <div class="stat-value">${total}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Logged in</div>
-      <div class="stat-value">${logged}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total sub-orgs</div>
-      <div class="stat-value">${sub}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total GROs</div>
-      <div class="stat-value">${gro}</div>
-    </div>
-  </div>
-
-  <div class="charts-row">
-    <div class="chart-card">
-      <div class="chart-title">Top Pilot Organizations by GRO Creation</div>
-      <div style="position:relative;height:220px;">
-        <canvas id="pilotGroChart"></canvas>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-title">Top Pilot Organizations by Sub-Organization Creation</div>
-      <div style="position:relative;height:220px;">
-        <canvas id="pilotSubChart"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-card">
-      <div class="table-header">
-        <div class="table-header-title">Pilot ministry / department details</div>
-        <div class="row-count">${pilotRaw.length} entities</div>
-      </div>
-
-      <div style="overflow-x:auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>S.No</th>
-            <th>Parent Organization</th>
-            <th>Sub-Organization</th>
-            <th>Logged In</th>
-            <th>Last Login</th>
-            <th>Sub-Org Count</th>
-            <th>GRO Count</th>
-            <th>GRO Mapping</th>
-            <th>Categories Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pilotRaw.map(r => `
-            <tr>
-              <td class="sno">${r.sno}</td>
-              <td class="org-name">${r.parent}</td>
-              <td>${r.sub}</td>
-              <td>${pill(r.login)}</td>
-              <td class="login-time">${r.loginTime || '—'}</td>
-              <td class="num">${r.subOrgCount}</td>
-              <td class="num">${r.groCount}</td>
-              <td>${pill(r.groMapping)}</td>
-              <td>${pill(r.categories)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-      </div>
-    </div>
-  </div>`;
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  
-buildPilotSection();
-renderPilotCharts();
-
-});
-
-
-</script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
-    --surface2: #f0ede8;
-    --border: #e2ddd6;
-    --text: #1a1916;
-    --text2: #6b6760;
-    --text3: #9e9b96;
-    --accent: #1a5276;
-    --accent-light: #e8f0f7;
-    --yes: #1a6b3c;
-    --yes-bg: #e6f4ec;
-    --no: #8b2828;
-    --no-bg: #fbeaea;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  .header { background: var(--accent); color: white; padding: 28px 40px 24px; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; }
-  .header-sub { font-size: 13px; opacity: 0.7; }
-  .badge-live { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-  .badge-live::before { content: ''; width: 7px; height: 7px; background: #4ade80; border-radius: 50%; display: inline-block; }
-  .controls { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 40px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .search-wrap { position: relative; flex: 1; min-width: 220px; }
-  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
-  .search-wrap input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); outline: none; }
-  .search-wrap input:focus { border-color: var(--accent); }
-  .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-  select { padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); cursor: pointer; outline: none; }
-  select:focus { border-color: var(--accent); }
-  .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 20px 40px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-  .stat-value { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1; }
-  .stat-card.accent { border-left: 3px solid var(--accent); }
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 40px 20px; }
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
-  .chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .table-wrap { padding: 0 40px 40px; }
-  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .table-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .table-header-title { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
-  .row-count { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
-  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .tbl thead th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; background: var(--surface2); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
-  .tbl thead th:hover { color: var(--text); }
-  .tbl thead th.sorted { color: var(--accent); }
-  .tbl tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-  .tbl tbody tr:last-child { border-bottom: none; }
-  .tbl tbody tr:hover { background: var(--surface2); }
-  .tbl td { padding: 10px 14px; color: var(--text); vertical-align: middle; }
-  .tbl td.org-name { font-weight: 500; max-width: 260px; }
-  .tbl td.num { font-family: 'DM Mono', monospace; font-size: 12px; text-align: center; }
-  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .pill.yes { background: var(--yes-bg); color: var(--yes); }
-  .pill.no { background: var(--no-bg); color: var(--no); }
-  .login-time { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
-  .no-data { text-align: center; padding: 40px; color: var(--text3); font-size: 14px; }
-  .sno { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
-  @media (max-width: 768px) {
-    .header, .controls, .stats-bar, .charts-row, .table-wrap { padding-left: 16px; padding-right: 16px; }
-    .charts-row { grid-template-columns: 1fr; }
-  }
-
-.tabs-nav { display:flex; gap:10px; padding:20px 40px 0; }
-.tab-btn { background: var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; color:var(--text2); }
-.tab-btn.active { background: var(--accent); color:white; border-color:var(--accent); }
-.dashboard-section { display:none; }
-.dashboard-section.active { display:block; }
-
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  background:#f5f4f0;
+  color:#1a1916;
+}
+.header{
+  background:#1a5276;
+  color:white;
+  padding:24px 40px;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:20px 40px 0;
+}
+.tab-btn{
+  border:none;
+  background:white;
+  padding:10px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+.tab-btn.active{
+  background:#1a5276;
+  color:white;
+}
+.section{
+  display:none;
+}
+.section.active{
+  display:block;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
+  padding:20px 40px;
+}
+.card{
+  background:white;
+  border-radius:12px;
+  padding:18px;
+}
+.label{
+  font-size:12px;
+  color:#666;
+  text-transform:uppercase;
+}
+.value{
+  font-size:28px;
+  font-weight:700;
+  margin-top:8px;
+}
+.charts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  padding:0 40px 20px;
+}
+.chart-card{
+  background:white;
+  border-radius:12px;
+  padding:20px;
+}
+.table-wrap{
+  padding:0 40px 40px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+}
+th{
+  background:#f0ede8;
+  padding:14px;
+  text-align:left;
+  font-size:12px;
+}
+td{
+  padding:14px;
+  border-top:1px solid #eee;
+  font-size:13px;
+}
+.yes{
+  color:#1a6b3c;
+  font-weight:700;
+}
+.no{
+  color:#a83a3a;
+  font-weight:700;
+}
 </style>
 </head>
+
 <body>
 
 <div class="header">
-  <div class="header-top">
-    <h1>Utility Tool Report</h1>
-    <div class="badge-live">25 May 2026</div>
-  </div>
-  <div class="header-sub">Parent organization engagement, sub-org activity &amp; GRO mapping overview</div>
+<h1>Stakeholder Metrics Dashboard</h1>
+<p>Daily stakeholder monitoring and pilot ministry tracking dashboard</p>
 </div>
 
-
-<div class="tabs-nav">
-  <button class="tab-btn active" onclick="switchTab('daily', this)">Daily Report</button>
-  <button class="tab-btn" onclick="switchTab('pilot', this)">Pilot Ministries / Dept</button>
+<div class="tabs">
+<button class="tab-btn active" onclick="showTab('daily', this)">Daily Report</button>
+<button class="tab-btn" onclick="showTab('pilot', this)">Pilot Ministries / Dept</button>
 </div>
 
-<div id="daily" class="dashboard-section active">
+<div id="daily" class="section active">
+<div class="stats" id="dailyStats"></div>
 
-<div class="controls">
-  <div class="search-wrap">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="Search organization…">
-  </div>
-  <div class="filter-group">
-    <select id="filterSubOrg">
-      <option value="">All sub-org status</option>
-      <option value="Yes">Has sub-orgs</option>
-      <option value="No">No sub-orgs</option>
-    </select>
-    <select id="filterGRO">
-      <option value="">All GRO mapping</option>
-      <option value="Yes">GRO mapped</option>
-      <option value="No">GRO not mapped</option>
-    </select>
-    <select id="filterCategories">
-      <option value="">All categories</option>
-      <option value="Yes">Categories updated</option>
-      <option value="No">Not updated</option>
-    </select>
-  </div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>S.No</th>
+<th>Organization</th>
+<th>Login</th>
+<th>Sub Org Count</th>
+<th>GRO Count</th>
+</tr>
+</thead>
+<tbody id="dailyBody"></tbody>
+</table>
+</div>
 </div>
 
-<div class="stats-bar" id="statsBar"></div>
+<div id="pilot" class="section">
+<div class="stats" id="pilotStats"></div>
 
-<div class="charts-row">
-  <div class="chart-card">
-    <div class="chart-title">Sub-org &amp; GRO mapping status</div>
-    <div style="position:relative;height:180px;"><canvas id="chartStatus" role="img" aria-label="Stacked bar chart comparing sub-org and GRO mapping status"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <div class="chart-title">Top 10 — count of GROs</div>
-    <div style="position:relative;height:180px;"><canvas id="chartGRO" role="img" aria-label="Horizontal bar chart of top 10 organizations by GRO count"></canvas></div>
-  </div>
+<div class="charts">
+<div class="chart-card">
+<canvas id="groChart"></canvas>
+</div>
+
+<div class="chart-card">
+<canvas id="subChart"></canvas>
+</div>
 </div>
 
 <div class="table-wrap">
-  <div class="table-card">
-    <div class="table-header">
-      <div class="table-header-title">Organization details</div>
-      <div class="row-count" id="rowCount"></div>
-    </div>
-    <div style="overflow-x:auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th onclick="sortTable('sno')" id="th-sno">S.No</th>
-            <th onclick="sortTable('org')" id="th-org">Parent Organization</th>
-            <th onclick="sortTable('login')" id="th-login">Logged In</th>
-            <th onclick="sortTable('loginTime')" id="th-loginTime">Last Login</th>
-            <th onclick="sortTable('subOrg')" id="th-subOrg">Sub-Orgs Created</th>
-            <th onclick="sortTable('subOrgCount')" id="th-subOrgCount">Sub-Org Count</th>
-            <th onclick="sortTable('groCount')" id="th-groCount">GRO Count</th>
-            <th onclick="sortTable('groMapping')" id="th-groMapping">GRO Mapping</th>
-            <th onclick="sortTable('categories')" id="th-categories">Categories Updated</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-  </div>
+<table>
+<thead>
+<tr>
+<th>S.No</th>
+<th>Parent Organization</th>
+<th>Sub Organization</th>
+<th>Login</th>
+<th>Sub Org Count</th>
+<th>GRO Count</th>
+<th>GRO Mapping</th>
+</tr>
+</thead>
+<tbody id="pilotBody"></tbody>
+</table>
+</div>
 </div>
 
 <script>
-const raw = [
-  {sno:1,org:"Ministry of Railways",login:"Yes",loginTime:"25-05-2026 10:55",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:2,org:"Ministry of Women & Child Development",login:"Yes",loginTime:"25-05-2026 11:00",subOrg:"Yes",subOrgCount:4,groCount:0,groMapping:"No",categories:"No"},
-  {sno:3,org:"Ministry of Housing and Urban Affairs",login:"Yes",loginTime:"25-05-2026 11:09",subOrg:"Yes",subOrgCount:22,groCount:3,groMapping:"Yes",categories:"No"},
-  {sno:4,org:"Ministry of Statistics and Programme Implementation",login:"Yes",loginTime:"25-05-2026 11:17",subOrg:"Yes",subOrgCount:25,groCount:1,groMapping:"Yes",categories:"No"},
-  {sno:5,org:"Ministry of Social Justice and Empowerment",login:"Yes",loginTime:"25-05-2026 11:35",subOrg:"Yes",subOrgCount:2,groCount:14,groMapping:"Yes",categories:"No"},
-  {sno:6,org:"Ministry of Agriculture & Farmers Welfare",login:"Yes",loginTime:"25-05-2026 11:52",subOrg:"Yes",subOrgCount:4,groCount:6,groMapping:"Yes",categories:"No"},
-  {sno:7,org:"Ministry of Ports, Shipping and Waterways",login:"Yes",loginTime:"25-05-2026 12:20",subOrg:"Yes",subOrgCount:15,groCount:50,groMapping:"Yes",categories:"No"},
-  {sno:8,org:"Ministry of Coal",login:"Yes",loginTime:"25-05-2026 12:23",subOrg:"Yes",subOrgCount:6,groCount:20,groMapping:"Yes",categories:"No"},
-  {sno:9,org:"Ministry of Micro Small and Medium Enterprises",login:"Yes",loginTime:"25-05-2026 12:49",subOrg:"Yes",subOrgCount:5,groCount:0,groMapping:"No",categories:"No"},
-  {sno:10,org:"Staff Selection Commission (SSC)",login:"Yes",loginTime:"25-05-2026 12:52",subOrg:"Yes",subOrgCount:9,groCount:5,groMapping:"Yes",categories:"No"},
-  {sno:11,org:"Ministry of Finance (MoF)",login:"Yes",loginTime:"25-05-2026 14:20",subOrg:"Yes",subOrgCount:8,groCount:3,groMapping:"Yes",categories:"No"},
-  {sno:12,org:"Ministry of Information and Broadcasting",login:"Yes",loginTime:"25-05-2026 14:29",subOrg:"Yes",subOrgCount:28,groCount:25,groMapping:"Yes",categories:"No"},
-  {sno:13,org:"Ministry of Textiles",login:"Yes",loginTime:"25-05-2026 14:42",subOrg:"Yes",subOrgCount:18,groCount:3,groMapping:"Yes",categories:"No"},
-  {sno:14,org:"Ministry of Commerce and Industry",login:"Yes",loginTime:"25-05-2026 14:57",subOrg:"Yes",subOrgCount:2,groCount:49,groMapping:"Yes",categories:"No"},
-  {sno:15,org:"Ministry of External Affairs (MEA)",login:"Yes",loginTime:"25-05-2026 15:05",subOrg:"Yes",subOrgCount:4,groCount:1,groMapping:"Yes",categories:"No"},
-  {sno:16,org:"Ministry of Science and Technology",login:"Yes",loginTime:"25-05-2026 15:06",subOrg:"Yes",subOrgCount:3,groCount:82,groMapping:"Yes",categories:"No"},
-  {sno:17,org:"Ministry of Consumer Affairs, Food and Public Distribution (MoCAFP)",login:"Yes",loginTime:"25-05-2026 15:14",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:18,org:"Ministry of Communications (MoC)",login:"Yes",loginTime:"25-05-2026 15:19",subOrg:"Yes",subOrgCount:29,groCount:4,groMapping:"Yes",categories:"No"},
-  {sno:19,org:"Ministry of Labour and Employment",login:"Yes",loginTime:"25-05-2026 15:44",subOrg:"Yes",subOrgCount:8,groCount:21,groMapping:"Yes",categories:"No"},
-  {sno:20,org:"Ministry of Education (MoE)",login:"Yes",loginTime:"25-05-2026 16:19",subOrg:"Yes",subOrgCount:2,groCount:0,groMapping:"No",categories:"No"},
-  {sno:21,org:"Ministry of Personnel, Public Grievance and Pension",login:"Yes",loginTime:"25-05-2026 17:52",subOrg:"Yes",subOrgCount:2,groCount:16,groMapping:"Yes",categories:"No"}
+
+const dailyData = [
+{ sno:1, org:"Ministry of Railways", login:"Yes", subOrgCount:1, groCount:0 },
+{ sno:2, org:"Ministry of Housing and Urban Affairs", login:"Yes", subOrgCount:22, groCount:3 },
+{ sno:3, org:"Ministry of Labour and Employment", login:"Yes", subOrgCount:8, groCount:21 },
+{ sno:4, org:"Ministry of Science and Technology", login:"Yes", subOrgCount:3, groCount:82 }
 ];
 
-
-const pilotRaw = [
-  {sno:1,parent:"Ministry of Labour & Employment",sub:"Ministry of Labour & Employment",login:"Yes",loginTime:"25-05-2026 15:44",subOrg:"Yes",subOrgCount:8,groCount:21,groMapping:"Yes",categories:"No"},
-  {sno:2,parent:"Ministry of Finance",sub:"Department of Financial Services",login:"Yes",loginTime:"13-05-2026 12:31",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:3,parent:"Ministry of Rural Development",sub:"Department of Rural Development",login:"Yes",loginTime:"21-05-2026 10:37",subOrg:"Yes",subOrgCount:1,groCount:35,groMapping:"Yes",categories:"No"},
-  {sno:4,parent:"Ministry of Rural Development",sub:"Department of Land Resources",login:"No",loginTime:"",subOrg:"No",subOrgCount:0,groCount:0,groMapping:"No",categories:"No"},
-  {sno:5,parent:"Ministry of Finance",sub:"Department of Economic Affairs",login:"Yes",loginTime:"13-05-2026 11:38",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:6,parent:"Ministry of Finance",sub:"Department of Expenditure",login:"Yes",loginTime:"19-05-2026 11:05",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:7,parent:"Ministry of Finance",sub:"Department of Investment & Public Asset Management",login:"Yes",loginTime:"13-05-2026 11:38",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:8,parent:"Ministry of Finance",sub:"Department of Public Enterprises",login:"Yes",loginTime:"13-05-2026 11:38",subOrg:"Yes",subOrgCount:1,groCount:0,groMapping:"No",categories:"No"},
-  {sno:9,parent:"Ministry of Finance",sub:"Central Board of Indirect Taxes and Customs",login:"Yes",loginTime:"25-05-2026 14:20",subOrg:"Yes",subOrgCount:41,groCount:0,groMapping:"No",categories:"No"},
-  {sno:10,parent:"Ministry of Finance",sub:"Central Board of Direct Taxes",login:"Yes",loginTime:"21-05-2026 13:15",subOrg:"Yes",subOrgCount:38,groCount:1,groMapping:"Yes",categories:"No"}
-  {sno:11,parent:"Directorate of Public Grievances",sub:"Directorate of Public Grievances",login:"No",loginTime:"",subOrg:"No",subOrgCount:0,groCount:0,groMapping:"No",categories:"No"}
+const pilotData = [
+{ sno:1, parent:"Ministry of Labour & Employment", sub:"Ministry of Labour & Employment", login:"Yes", subOrgCount:8, groCount:21, groMapping:"Yes" },
+{ sno:2, parent:"Ministry of Finance", sub:"Department of Financial Services", login:"Yes", subOrgCount:1, groCount:0, groMapping:"No" },
+{ sno:3, parent:"Ministry of Rural Development", sub:"Department of Rural Development", login:"Yes", subOrgCount:1, groCount:35, groMapping:"Yes" },
+{ sno:4, parent:"Ministry of Rural Development", sub:"Department of Land Resources", login:"No", subOrgCount:0, groCount:0, groMapping:"No" },
+{ sno:5, parent:"Ministry of Finance", sub:"Department of Economic Affairs", login:"Yes", subOrgCount:1, groCount:0, groMapping:"No" },
+{ sno:6, parent:"Ministry of Finance", sub:"Department of Expenditure", login:"Yes", subOrgCount:1, groCount:0, groMapping:"No" },
+{ sno:7, parent:"Ministry of Finance", sub:"Department of Investment & Public Asset Management", login:"Yes", subOrgCount:1, groCount:0, groMapping:"No" },
+{ sno:8, parent:"Ministry of Finance", sub:"Department of Public Enterprises", login:"Yes", subOrgCount:1, groCount:0, groMapping:"No" },
+{ sno:9, parent:"Ministry of Finance", sub:"Central Board of Indirect Taxes and Customs", login:"Yes", subOrgCount:41, groCount:0, groMapping:"No" },
+{ sno:10, parent:"Ministry of Finance", sub:"Central Board of Direct Taxes", login:"Yes", subOrgCount:38, groCount:1, groMapping:"Yes" },
+{ sno:11, parent:"Directorate of Public Grievances (DPG)", sub:"Directorate of Public Grievances (DPG)", login:"No", subOrgCount:0, groCount:0, groMapping:"No" }
 ];
 
-let data = [...raw];
-let sortKey = 'sno';
-let sortDir = 1;
+function showTab(id, el){
+  document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
 
-function pill(val) {
-  return `<span class="pill ${val==='Yes'?'yes':'no'}">${val==='Yes'?'✓ Yes':'✗ No'}</span>`;
-}
-
-function renderStats(d) {
-  const total = d.length;
-  const loggedIn = d.filter(r=>r.login==='Yes').length;
-  const hasSubOrg = d.filter(r=>r.subOrg==='Yes').length;
-  const totalSubOrg = d.reduce((s,r)=>s+r.subOrgCount,0);
-  const totalGRO = d.reduce((s,r)=>s+r.groCount,0);
-  const catsUpdated = d.filter(r=>r.categories==='Yes').length;
-  document.getElementById('statsBar').innerHTML = `
-    <div class="stat-card accent">
-      <div class="stat-label">Total orgs</div>
-      <div class="stat-value">${total}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Logged in</div>
-      <div class="stat-value" style="color:#1a6b3c">${loggedIn}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Sub-orgs created</div>
-      <div class="stat-value">${hasSubOrg}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total sub-orgs</div>
-      <div class="stat-value">${totalSubOrg}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total GROs</div>
-      <div class="stat-value">${totalGRO}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Categories updated</div>
-      <div class="stat-value">${catsUpdated}</div>
-    </div>
-  `;
-}
-
-function renderTable(d) {
-  const tbody = document.getElementById('tableBody');
-  if (d.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="no-data">No organizations match your filters.</td></tr>`;
-    document.getElementById('rowCount').textContent = '0 organizations';
-    return;
-  }
-  document.getElementById('rowCount').textContent = `${d.length} of ${raw.length} organizations`;
-  tbody.innerHTML = d.map(r => `
-    <tr>
-      <td class="sno">${r.sno}</td>
-      <td class="org-name">${r.org}</td>
-      <td>${pill(r.login)}</td>
-      <td class="login-time">${r.loginTime || '<span style="color:var(--text3)">—</span>'}</td>
-      <td>${pill(r.subOrg)}</td>
-      <td class="num">${r.subOrgCount > 0 ? `<span style="font-weight:500;color:var(--accent)">${r.subOrgCount}</span>` : '<span style="color:var(--text3)">0</span>'}</td>
-      <td class="num">${r.groCount > 0 ? `<span style="font-weight:500;color:var(--accent)">${r.groCount}</span>` : '<span style="color:var(--text3)">0</span>'}</td>
-      <td>${pill(r.groMapping)}</td>
-      <td>${pill(r.categories)}</td>
-    </tr>
-  `).join('');
-}
-
-let statusChart, groChart;
-
-function renderCharts(d) {
-  const subYes = d.filter(r=>r.subOrg==='Yes').length;
-  const subNo = d.filter(r=>r.subOrg==='No').length;
-  const groYes = d.filter(r=>r.groMapping==='Yes').length;
-  const groNo = d.filter(r=>r.groMapping==='No').length;
-  const catYes = d.filter(r=>r.categories==='Yes').length;
-  const catNo = d.filter(r=>r.categories==='No').length;
-
-  if (statusChart) statusChart.destroy();
-  statusChart = new Chart(document.getElementById('chartStatus'), {
-    type: 'bar',
-    data: {
-      labels: ['Sub-orgs created', 'GRO mapping', 'Categories updated'],
-      datasets: [
-        { label: 'Yes', data: [subYes, groYes, catYes], backgroundColor: '#1a6b3c', borderRadius: 4 },
-        { label: 'No', data: [subNo, groNo, catNo], backgroundColor: '#e2ddd6', borderRadius: 4 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } },
-        y: { stacked: true, grid: { color: '#f0ede8' }, ticks: { font: { size: 11 }, precision: 0 } }
-      }
-    }
-  });
-
-  const top10 = [...d].sort((a,b)=>b.groCount-a.groCount).slice(0,10).reverse();
-  if (groChart) groChart.destroy();
-  groChart = new Chart(document.getElementById('chartGRO'), {
-    type: 'bar',
-    data: {
-      labels: top10.map(r => r.org.length > 30 ? r.org.substring(0,28)+'…' : r.org),
-      datasets: [{ data: top10.map(r=>r.groCount), backgroundColor: '#1a5276', borderRadius: 3, barThickness: 12 }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: '#f0ede8' }, ticks: { font: { size: 11 }, precision: 0 } },
-        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-      }
-    }
-  });
-}
-
-function getFiltered() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const subOrgF = document.getElementById('filterSubOrg').value;
-  const groF = document.getElementById('filterGRO').value;
-  const catF = document.getElementById('filterCategories').value;
-  return raw.filter(r => {
-    if (search && !r.org.toLowerCase().includes(search)) return false;
-    if (subOrgF && r.subOrg !== subOrgF) return false;
-    if (groF && r.groMapping !== groF) return false;
-    if (catF && r.categories !== catF) return false;
-    return true;
-  });
-}
-
-function sortTable(key) {
-  if (sortKey === key) sortDir *= -1;
-  else { sortKey = key; sortDir = 1; }
-  document.querySelectorAll('.tbl thead th').forEach(th => th.classList.remove('sorted'));
-  document.getElementById('th-'+key)?.classList.add('sorted');
-  applySort();
-}
-
-function applySort() {
-  data.sort((a,b) => {
-    let av = a[sortKey], bv = b[sortKey];
-    if (typeof av === 'string') av = av.toLowerCase();
-    if (typeof bv === 'string') bv = bv.toLowerCase();
-    return av < bv ? -sortDir : av > bv ? sortDir : 0;
-  });
-  renderTable(data);
-}
-
-function update() {
-  data = getFiltered();
-  renderStats(data);
-  renderTable(data);
-  renderCharts(data);
-}
-
-document.getElementById('searchInput').addEventListener('input', update);
-document.getElementById('filterSubOrg').addEventListener('change', update);
-document.getElementById('filterGRO').addEventListener('change', update);
-document.getElementById('filterCategories').addEventListener('change', update);
-
-update();
-
-
-function renderPilotCharts() {
-
-  // Highest GRO creation
-  const topGro = [...pilotRaw]
-    .sort((a,b) => b.groCount - a.groCount)
-    .slice(0,5);
-
-  // Highest sub-org creation
-  const topSub = [...pilotRaw]
-    .sort((a,b) => b.subOrgCount - a.subOrgCount)
-    .slice(0,5);
-  
-const groCanvas = document.getElementById('pilotGroChart');
-
-if (groCanvas) new Chart(groCanvas, {
-
-    type: 'bar',
-    data: {
-      labels: topGro.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
-      datasets: [{
-        data: topGro.map(r => r.groCount),
-        backgroundColor: '#1a5276',
-        borderRadius: 4,
-        barThickness: 18
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          grid: { color: '#f0ede8' },
-          ticks: {
-            precision: 0,
-            font: { size: 11 }
-          }
-        },
-        y: {
-          grid: { display: false },
-          ticks: {
-            font: { size: 10 }
-          }
-        }
-      }
-    }
-  });
-
-  
-const subCanvas = document.getElementById('pilotSubChart');
-
-if (subCanvas) new Chart(subCanvas, {
-
-    type: 'bar',
-    data: {
-      labels: topSub.map(r => r.sub.length > 26 ? r.sub.substring(0,24)+'…' : r.sub),
-      datasets: [{
-        data: topSub.map(r => r.subOrgCount),
-        backgroundColor: '#1a6b3c',
-        borderRadius: 4,
-        barThickness: 18
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          grid: { color: '#f0ede8' },
-          ticks: {
-            precision: 0,
-            font: { size: 11 }
-          }
-        },
-        y: {
-          grid: { display: false },
-          ticks: {
-            font: { size: 10 }
-          }
-        }
-      }
-    }
-  });
-}
-
-function switchTab(id, el) {
-  document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
 }
 
-function buildPilotSection() {
-  const pilot = document.getElementById('pilot');
+function renderDaily(){
 
-  const total = pilotRaw.length;
-  const logged = pilotRaw.filter(r => r.login === 'Yes').length;
-  const gro = pilotRaw.reduce((s,r)=>s+r.groCount,0);
-  const sub = pilotRaw.reduce((s,r)=>s+r.subOrgCount,0);
+  const total = dailyData.length;
+  const gro = dailyData.reduce((a,b)=>a+b.groCount,0);
 
-  pilot.innerHTML = `
-  <div class="stats-bar">
-    <div class="stat-card accent">
-      <div class="stat-label">Pilot entities</div>
-      <div class="stat-value">${total}</div>
+  document.getElementById('dailyStats').innerHTML = `
+    <div class="card">
+      <div class="label">Organizations</div>
+      <div class="value">${total}</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Logged in</div>
-      <div class="stat-value">${logged}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total sub-orgs</div>
-      <div class="stat-value">${sub}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total GROs</div>
-      <div class="stat-value">${gro}</div>
-    </div>
-  </div>
 
-  <div class="table-wrap">
-    <div class="table-card">
-      <div class="table-header">
-        <div class="table-header-title">Pilot ministry / department details</div>
-        <div class="row-count">${pilotRaw.length} entities</div>
-      </div>
-
-      <div style="overflow-x:auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>S.No</th>
-            <th>Parent Organization</th>
-            <th>Sub-Organization</th>
-            <th>Logged In</th>
-            <th>Last Login</th>
-            <th>Sub-Org Count</th>
-            <th>GRO Count</th>
-            <th>GRO Mapping</th>
-            <th>Categories Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pilotRaw.map(r => `
-            <tr>
-              <td class="sno">${r.sno}</td>
-              <td class="org-name">${r.parent}</td>
-              <td>${r.sub}</td>
-              <td>${pill(r.login)}</td>
-              <td class="login-time">${r.loginTime || '—'}</td>
-              <td class="num">${r.subOrgCount}</td>
-              <td class="num">${r.groCount}</td>
-              <td>${pill(r.groMapping)}</td>
-              <td>${pill(r.categories)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-      </div>
+    <div class="card">
+      <div class="label">Total GROs</div>
+      <div class="value">${gro}</div>
     </div>
-  </div>`;
+  `;
+
+  document.getElementById('dailyBody').innerHTML =
+    dailyData.map(r => `
+      <tr>
+        <td>${r.sno}</td>
+        <td>${r.org}</td>
+        <td class="${r.login.toLowerCase()}">${r.login}</td>
+        <td>${r.subOrgCount}</td>
+        <td>${r.groCount}</td>
+      </tr>
+    `).join('');
 }
 
+function renderPilot(){
 
-document.addEventListener('DOMContentLoaded', () => {
-  
-buildPilotSection();
-renderPilotCharts();
+  const total = pilotData.length;
+  const sub = pilotData.reduce((a,b)=>a+b.subOrgCount,0);
+  const gro = pilotData.reduce((a,b)=>a+b.groCount,0);
 
-});
+  document.getElementById('pilotStats').innerHTML = `
+    <div class="card">
+      <div class="label">Pilot Entities</div>
+      <div class="value">${total}</div>
+    </div>
 
+    <div class="card">
+      <div class="label">Total Sub Orgs</div>
+      <div class="value">${sub}</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Total GROs</div>
+      <div class="value">${gro}</div>
+    </div>
+  `;
+
+  document.getElementById('pilotBody').innerHTML =
+    pilotData.map(r => `
+      <tr>
+        <td>${r.sno}</td>
+        <td>${r.parent}</td>
+        <td>${r.sub}</td>
+        <td class="${r.login.toLowerCase()}">${r.login}</td>
+        <td>${r.subOrgCount}</td>
+        <td>${r.groCount}</td>
+        <td class="${r.groMapping.toLowerCase()}">${r.groMapping}</td>
+      </tr>
+    `).join('');
+
+  const topGro = [...pilotData].sort((a,b)=>b.groCount-a.groCount).slice(0,5);
+  const topSub = [...pilotData].sort((a,b)=>b.subOrgCount-a.subOrgCount).slice(0,5);
+
+  new Chart(document.getElementById('groChart'), {
+    type:'bar',
+    data:{
+      labels:topGro.map(x=>x.sub),
+      datasets:[{
+        data:topGro.map(x=>x.groCount),
+        backgroundColor:'#1a5276'
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  new Chart(document.getElementById('subChart'), {
+    type:'bar',
+    data:{
+      labels:topSub.map(x=>x.sub),
+      datasets:[{
+        data:topSub.map(x=>x.subOrgCount),
+        backgroundColor:'#1a6b3c'
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+window.onload = () => {
+  renderDaily();
+  renderPilot();
+};
 
 </script>
-</div>
-<div id='pilot' class='dashboard-section'></div>
 
+</body>
 </html>
