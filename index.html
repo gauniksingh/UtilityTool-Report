@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Utility Tool Report</title>
+<title>Stakeholder Metrics Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -79,8 +79,8 @@
 
 <div class="header">
   <div class="header-top">
-    <h1>Utility Tool Report</h1>
-    <div class="badge-live">25 May 2026</div>
+    <h1>Stakeholder Metrics Report</h1>
+    <div class="badge-live">Live as of 25 May 2026</div>
   </div>
   <div class="header-sub">Parent organization engagement, sub-org activity &amp; GRO mapping overview</div>
 </div>
@@ -95,6 +95,11 @@
       <option value="">All sub-org status</option>
       <option value="Yes">Has sub-orgs</option>
       <option value="No">No sub-orgs</option>
+    </select>
+    <select id="filterGRO">
+      <option value="">All GRO mapping</option>
+      <option value="Yes">GRO mapped</option>
+      <option value="No">GRO not mapped</option>
     </select>
     <select id="filterCategories">
       <option value="">All categories</option>
@@ -204,11 +209,6 @@ function renderStats(d) {
       <div class="stat-label">Total GROs</div>
       <div class="stat-value">${totalGRO}</div>
       <div class="stat-sub">Across all organizations</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">GRO mapped</div>
-      <div class="stat-value">${groMapped}</div>
-      <div class="stat-sub">${total-groMapped} not mapped</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Categories updated</div>
