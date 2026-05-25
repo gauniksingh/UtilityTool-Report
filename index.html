@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Utility Tool Report</title>
+<title>Stakeholder Metrics Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -43,7 +43,6 @@
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
   .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
   .stat-value { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1; }
-  .stat-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
   .stat-card.accent { border-left: 3px solid var(--accent); }
   .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 40px 20px; }
   .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
@@ -79,7 +78,7 @@
 
 <div class="header">
   <div class="header-top">
-    <h1>Utility Tool Report</h1>
+    <h1>Stakeholder Metrics Report</h1>
     <div class="badge-live">Live as of 25 May 2026</div>
   </div>
   <div class="header-sub">Parent organization engagement, sub-org activity &amp; GRO mapping overview</div>
@@ -186,29 +185,33 @@ function renderStats(d) {
   const total = d.length;
   const loggedIn = d.filter(r=>r.login==='Yes').length;
   const hasSubOrg = d.filter(r=>r.subOrg==='Yes').length;
-  const groMapped = d.filter(r=>r.groMapping==='Yes').length;
-  const catsUpdated = d.filter(r=>r.categories==='Yes').length;
+  const totalSubOrg = d.reduce((s,r)=>s+r.subOrgCount,0);
   const totalGRO = d.reduce((s,r)=>s+r.groCount,0);
+  const catsUpdated = d.filter(r=>r.categories==='Yes').length;
   document.getElementById('statsBar').innerHTML = `
     <div class="stat-card accent">
       <div class="stat-label">Total orgs</div>
       <div class="stat-value">${total}</div>
-      <div class="stat-sub">Parent organizations</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Logged in</div>
       <div class="stat-value" style="color:#1a6b3c">${loggedIn}</div>
-      <div class="stat-sub">${total-loggedIn} not logged in</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Sub-orgs created</div>
       <div class="stat-value">${hasSubOrg}</div>
-      <div class="stat-sub">${total-hasSubOrg} without sub-orgs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total sub-orgs</div>
+      <div class="stat-value">${totalSubOrg}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total GROs</div>
+      <div class="stat-value">${totalGRO}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Categories updated</div>
       <div class="stat-value">${catsUpdated}</div>
-      <div class="stat-sub">${total-catsUpdated} pending update</div>
     </div>
   `;
 }
