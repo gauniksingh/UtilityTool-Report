@@ -1,1 +1,457 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Utility Tool Report</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+function filterDaily(){
+  const search = document.getElementById('dailySearch').value.toLowerCase();
+  const login = document.getElementById('dailyLoginFilter').value;
+  const gro = document.getElementById('dailyGroFilter').value;
+
+  document.querySelectorAll('#dailyBody tr').forEach(row=>{
+    const text = row.innerText.toLowerCase();
+    const cells = row.querySelectorAll('td');
+
+    const loginVal = cells.length > 2 ? cells[2].innerText.trim() : '';
+    const groVal = cells.length > 7 ? cells[7].innerText.trim() : '';
+
+    const matchSearch = text.includes(search);
+    const matchLogin = !login || loginVal.includes(login);
+    const matchGro = !gro || groVal.includes(gro);
+
+    row.style.display = (matchSearch && matchLogin && matchGro) ? '' : 'none';
+  });
+}
+
+function filterPilot(){
+  const search = document.getElementById('pilotSearch').value.toLowerCase();
+  const login = document.getElementById('pilotLoginFilter').value;
+  const gro = document.getElementById('pilotGroFilter').value;
+
+  document.querySelectorAll('#pilotBody tr').forEach(row=>{
+    const text = row.innerText.toLowerCase();
+    const cells = row.querySelectorAll('td');
+
+    const loginVal = cells.length > 3 ? cells[3].innerText.trim() : '';
+    const groVal = cells.length > 6 ? cells[6].innerText.trim() : '';
+
+    const matchSearch = text.includes(search);
+    const matchLogin = !login || loginVal.includes(login);
+    const matchGro = !gro || groVal.includes(gro);
+
+    row.style.display = (matchSearch && matchLogin && matchGro) ? '' : 'none';
+  });
+}
+
+</script>
+
+<style>
+:root{
+  --bg:#f5f4f0;
+  --card:#fff;
+  --border:#e7e2db;
+  --text:#1a1916;
+  --muted:#6f6a63;
+  --accent:#1f4e78;
+  --green:#1f7a4d;
+  --red:#b33a3a;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:'DM Sans',sans-serif;
+  color:var(--text);
+}
+
+.header{
+  background:var(--accent);
+  color:#fff;
+  padding:28px 40px;
+}
+
+.header h1{margin:0;font-size:26px;}
+.header p{margin:6px 0 0;font-size:14px;opacity:.9;}
+
+.tabs{
+  display:flex;
+  gap:12px;
+  padding:20px 40px 0;
+}
+
+.tab-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  padding:10px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:13px;
+}
+
+.tab-btn.active{
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
+}
+
+.section{display:none;}
+.section.active{display:block;}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  padding:20px 40px;
+}
+
+.card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px;
+}
+
+.label{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+.value{
+  margin-top:8px;
+  font-size:30px;
+  font-weight:700;
+}
+
+.charts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  padding:0 40px 20px;
+}
+
+.chart-card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px;
+}
+
+.chart-title{
+  font-size:14px;
+  font-weight:600;
+  margin-bottom:14px;
+}
+
+.table-wrap{padding:0 40px 40px;}
+
+.table-card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+}
+
+.table-header{
+  padding:18px 20px;
+  border-bottom:1px solid var(--border);
+  font-weight:600;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#f8f5f1;
+  padding:14px;
+  text-align:left;
+  font-size:12px;
+  text-transform:uppercase;
+}
+
+td{
+  padding:14px;
+  border-top:1px solid #f0ece7;
+  font-size:13px;
+}
+
+.pill{
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.yes{background:#e8f6ed;color:var(--green);}
+.no{background:#fdeaea;color:var(--red);}
+
+@media(max-width:900px){
+  .charts{grid-template-columns:1fr;}
+}
+
+.filters{
+  display:flex;
+  gap:12px;
+  padding:0 40px 20px;
+  flex-wrap:wrap;
+}
+
+.filter-input, .filter-select{
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:white;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  min-width:220px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>Utility Tool Report</h1>
+  <div class="badge-live">As of 25 May 2026</div>
+  <p>Daily stakeholder monitoring and pilot ministry tracking dashboard</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('daily',this)">Daily Report</button>
+  <button class="tab-btn" onclick="showTab('pilot',this)">Pilot Ministries / Dept</button>
+</div>
+
+<div id="daily" class="section active">
+  <div class="stats" id="dailyStats"></div>
+
+  
+<div class="filters">
+  <input type="text" id="dailySearch" class="filter-input" placeholder="Search organization..." onkeyup="filterDaily()">
+
+  <select id="dailyLoginFilter" class="filter-select" onchange="filterDaily()">
+    <option value="">All Login Status</option>
+    <option value="Yes">Logged In</option>
+    <option value="No">Not Logged In</option>
+  </select>
+
+  <select id="dailyGroFilter" class="filter-select" onchange="filterDaily()">
+    <option value="">All GRO Mapping</option>
+    <option value="Yes">Mapped</option>
+    <option value="No">Not Mapped</option>
+  </select>
+</div>
+
+<div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Top Organizations by GRO Creation</div>
+      <div style="height:320px"><canvas id="dailyGroChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Top Organizations by Sub-Organization Creation</div>
+      <div style="height:320px"><canvas id="dailySubChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-card">
+      <div class="table-header">Daily Report</div>
+      <div style="overflow:auto">
+      <table>
+        <thead id="dailyHead"></thead>
+        <tbody id="dailyBody"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pilot" class="section">
+  <div class="stats" id="pilotStats"></div>
+
+  
+<div class="filters">
+  <input type="text" id="pilotSearch" class="filter-input" placeholder="Search pilot ministry..." onkeyup="filterPilot()">
+
+  <select id="pilotLoginFilter" class="filter-select" onchange="filterPilot()">
+    <option value="">All Login Status</option>
+    <option value="Yes">Logged In</option>
+    <option value="No">Not Logged In</option>
+  </select>
+
+  <select id="pilotGroFilter" class="filter-select" onchange="filterPilot()">
+    <option value="">All GRO Mapping</option>
+    <option value="Yes">Mapped</option>
+    <option value="No">Not Mapped</option>
+  </select>
+</div>
+<div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Top Organizations by GRO Creation</div>
+      <div style="height:320px"><canvas id="pilotGroChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Top Organizations by Sub-Organization Creation</div>
+      <div style="height:320px"><canvas id="pilotSubChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-card">
+      <div class="table-header">Pilot Ministries / Departments</div>
+      <div style="overflow:auto">
+      <table>
+        <thead id="pilotHead"></thead>
+        <tbody id="pilotBody"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const dailyData = [{"SNo": 1.0, "Parent Organization": "Ministry of Civil Aviation", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:42:16", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 9.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 2.0, "Parent Organization": "Ministry of Coal", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:34:44", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 6.0, "Count of GRO": 20.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 3.0, "Parent Organization": "Ministry of Earth Sciences", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 12:25:24", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 10.0, "Count of GRO": 2.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 4.0, "Parent Organization": "Ministry of Education (MoE)", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 15:00:19", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 2.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 5.0, "Parent Organization": "Ministry of External Affairs (MEA)", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:30:13", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 7.0, "Count of GRO": 1.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 6.0, "Parent Organization": "Ministry of Housing and Urban Affairs", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 10:34:55", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 24.0, "Count of GRO": 3.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 14.0, "null": ""}, {"SNo": 7.0, "Parent Organization": "Ministry of Information and Broadcasting", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 10:41:24", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 28.0, "Count of GRO": 25.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 36.0, "null": ""}, {"SNo": 8.0, "Parent Organization": "Ministry of Labour and Employment", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:58:56", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 8.0, "Count of GRO": 21.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 9.0, "Parent Organization": "Ministry of Micro Small and Medium Enterprises", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 10:16:21", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 13.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 10.0, "Parent Organization": "Ministry of Petroleum and Natural Gas", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 12:07:24", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 29.0, "Count of GRO": 1.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 11.0, "Parent Organization": "Ministry of Ports, Shipping and Waterways", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 12:06:04", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 16.0, "Count of GRO": 50.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 12.0, "Parent Organization": "Ministry of Skill Development and Entrepreneurship", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 12:45:21", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 2.0, "Count of GRO": 3.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 13.0, "Parent Organization": "Ministry of Social Justice and Empowerment", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:48:54", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 2.0, "Count of GRO": 14.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 14.0, "Parent Organization": "Ministry of Steel", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 08:29:43", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 23.0, "Count of GRO": 31.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 213.0, "null": ""}, {"SNo": 15.0, "Parent Organization": "Ministry of Textiles", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:45:15", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 18.0, "Count of GRO": 3.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 17.0, "null": ""}];
+const pilotData = [{"SNo": 1.0, "Parent Organization": "Directorate of Public Grievances (DPG)", "Sub-Organization": "Directorate of Public Grievances (DPG)", "Logged in (Yes/No)": "No", "Last time of Login": "NaT", "Sub Organizations created (Yes/No)": "No", "Count of Sub Organization": 0.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 2.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Department of Financial Services", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-13 12:31:14", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 147.0, "null": ""}, {"SNo": 3.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Department of Economic Affairs ACC Division", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-13 11:38:39", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 4.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Department of Investment & Public Asset Management", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-13 11:38:45", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 5.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Department of Public Enterprises", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-13 11:38:43", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 6.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Department of Expenditure", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-19 11:05:22", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}, {"SNo": 7.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Central Board of Direct Taxes", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-21 13:15:06", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 1.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 16.0, "null": ""}, {"SNo": 8.0, "Parent Organization": "Ministry of Finance (MoF)", "Sub-Organization": "Central Board of Indirect Taxes and Customs", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 13:03:09", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 6.0, "null": ""}, {"SNo": 9.0, "Parent Organization": "Ministry of Labour and Employment", "Sub-Organization": "Ministry of Labour and Employment", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-26 14:58:56", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 8.0, "Count of GRO": 21.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 0.0, "null": ""}, {"SNo": 10.0, "Parent Organization": "Ministry of Rural Development (MoRD)", "Sub-Organization": "Department of Rural Development", "Logged in (Yes/No)": "Yes", "Last time of Login": "2026-05-21 10:37:12", "Sub Organizations created (Yes/No)": "Yes", "Count of Sub Organization": 1.0, "Count of GRO": 35.0, "GRO Mapping (Yes/No)": "Yes", "Categories updated": 1.0, "null": ""}, {"SNo": 11.0, "Parent Organization": "Ministry of Rural Development (MoRD)", "Sub-Organization": "Department of Land Resources", "Logged in (Yes/No)": "No", "Last time of Login": "NaT", "Sub Organizations created (Yes/No)": "No", "Count of Sub Organization": 0.0, "Count of GRO": 0.0, "GRO Mapping (Yes/No)": "No", "Categories updated": 0.0, "null": ""}];
+
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function pill(v){
+  if(String(v).toLowerCase()==='yes') return `<span class="pill yes">Yes</span>`;
+  if(String(v).toLowerCase()==='no') return `<span class="pill no">No</span>`;
+  return v;
+}
+
+function renderTable(data, headId, bodyId){
+  const cols = Object.keys(data[0]);
+
+  document.getElementById(headId).innerHTML =
+    '<tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr>';
+
+  document.getElementById(bodyId).innerHTML =
+    data.map(r=>'<tr>'+cols.map(c=>`<td>${pill(r[c])}</td>`).join('')+'</tr>').join('');
+}
+
+function renderStats(data,id,groKey,subKey){
+  const total=data.length;
+  const gro=data.reduce((a,b)=>a+(Number(b[groKey])||0),0);
+  const sub=data.reduce((a,b)=>a+(Number(b[subKey])||0),0);
+
+  document.getElementById(id).innerHTML=`
+    <div class="card">
+      <div class="label">Total Parent Organizations</div>
+      <div class="value">${total}</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Total GROs</div>
+      <div class="value">${gro}</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Total Sub Organizations</div>
+      <div class="value">${sub}</div>
+    </div>
+  `;
+}
+
+function chart(canvasId,data,labelKey,valueKey,color){
+  const sorted=[...data]
+    .sort((a,b)=>(Number(b[valueKey])||0)-(Number(a[valueKey])||0))
+    .slice(0,5);
+
+  new Chart(document.getElementById(canvasId),{
+    type:'bar',
+    data:{
+      labels:sorted.map(x=>x[labelKey]),
+      datasets:[{
+        data:sorted.map(x=>x[valueKey]),
+        backgroundColor:color,
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      indexAxis:'y',
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+renderTable(dailyData,'dailyHead','dailyBody');
+renderTable(pilotData,'pilotHead','pilotBody');
+
+renderStats(dailyData,'dailyStats','Count of GRO','Count of Sub Organization');
+renderStats(pilotData,'pilotStats','Count of GRO','Count of Sub Organization');
+
+chart('dailyGroChart',dailyData,'Parent Organization','Count of GRO','#1f4e78');
+chart('dailySubChart',dailyData,'Parent Organization','Count of Sub Organization','#1f7a4d');
+
+chart('pilotGroChart',pilotData,'Sub-Organization','Count of GRO','#1f4e78');
+chart('pilotSubChart',pilotData,'Sub-Organization','Count of Sub Organization','#1f7a4d');
+
+
+function filterDaily(){
+  const search = document.getElementById('dailySearch').value.toLowerCase();
+  const login = document.getElementById('dailyLoginFilter').value;
+  const gro = document.getElementById('dailyGroFilter').value;
+
+  document.querySelectorAll('#dailyBody tr').forEach(row=>{
+    const text = row.innerText.toLowerCase();
+    const cells = row.querySelectorAll('td');
+
+    const loginVal = cells.length > 2 ? cells[2].innerText.trim() : '';
+    const groVal = cells.length > 7 ? cells[7].innerText.trim() : '';
+
+    const matchSearch = text.includes(search);
+    const matchLogin = !login || loginVal.includes(login);
+    const matchGro = !gro || groVal.includes(gro);
+
+    row.style.display = (matchSearch && matchLogin && matchGro) ? '' : 'none';
+  });
+}
+
+function filterPilot(){
+  const search = document.getElementById('pilotSearch').value.toLowerCase();
+  const login = document.getElementById('pilotLoginFilter').value;
+  const gro = document.getElementById('pilotGroFilter').value;
+
+  document.querySelectorAll('#pilotBody tr').forEach(row=>{
+    const text = row.innerText.toLowerCase();
+    const cells = row.querySelectorAll('td');
+
+    const loginVal = cells.length > 3 ? cells[3].innerText.trim() : '';
+    const groVal = cells.length > 6 ? cells[6].innerText.trim() : '';
+
+    const matchSearch = text.includes(search);
+    const matchLogin = !login || loginVal.includes(login);
+    const matchGro = !gro || groVal.includes(gro);
+
+    row.style.display = (matchSearch && matchLogin && matchGro) ? '' : 'none';
+  });
+}
+
+</script>
+
+</body>
+</html>
